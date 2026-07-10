@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block Title %}Logout Page{% endblock %}
+{% block content %}
+    <a href="{{ url_for('login')}}"><button class="btn btn-primary" type="submit">Login</button></a>
+    <a href="{{ url_for('home')}}"><button class="btn btn-primary" type="submit">Home</button></a>
+{% endblock %}

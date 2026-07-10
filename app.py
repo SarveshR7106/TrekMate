@@ -1,7 +1,7 @@
-from flask import Flask, redirect, url_for, render_template, request
+from flask import Flask, redirect, url_for, render_template, request, session
 
 app = Flask(__name__)
-
+app.secret_key = "HELLOO!!"
 
 @app.route("/")
 def home():
@@ -11,13 +11,23 @@ def home():
 def login():
     if request.method == "POST":
         user = request.form["email"]
-        return redirect(url_for("user", usr=user))
+        session["user"] = user
+        return redirect(url_for("user"))
     else:
         return render_template("login.html")
 
-@app.route("/<usr>")
-def user(usr):
-    return render_template("user.html", email = usr)
+@app.route("/user")
+def user():
+    if "user" in session:
+        email = session["user"]
+        return render_template("user.html", email = email)
+    else:
+        return redirect(url_for("login"))
+
+@app.route("/logout")
+def logout():
+    session.pop("user")
+    return render_template("logout.html")
 
 if __name__ == "__main__":
     app.run(debug=True)
