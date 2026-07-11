@@ -18,4 +18,15 @@
             </tbody>
         </table>
     {% endfor %}
+
+    {% for a in active_staff %}
+        <table class="table" title="Active Staff">
+            <tr>
+                <td><p>Name: {{ a.name }}</p></td>
+                <td><p>Username: {{ a.username }}</p></td>
+                <td><p>Email: {{ a.email }}</p></td>
+                <button type="submit">Blacklist</button>
+            </tr>
+        </table>
+    {% endfor %}
 {% endblock %}

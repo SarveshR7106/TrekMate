@@ -71,6 +71,10 @@ def signup():
         if found_user:
             return render_template("signup.html", error="Email already present")
         
+        found_username = role_val.query.filter_by(username=username).first()
+        if found_username:
+            return render_template("signup.html", error="Username already taken")
+        
         #adding the user to the database
         usr = role_val(name, email, phone_no, username, password)
         db.session.add(usr)
@@ -111,7 +115,8 @@ def login():
 def admin_dashboard():
     if "admin" in session:
         pending_req = staff.query.filter_by(status="pending").all()
-        return render_template("admin.html", pending_req=pending_req)
+        active_staff = staff.query.filter_by(status="active").all()
+        return render_template("admin.html", pending_req=pending_req, active_staff=active_staff)
     
     else:
         return redirect(url_for("login"))
