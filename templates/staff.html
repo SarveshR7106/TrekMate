@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Staff Page{% endblock %}
+{% block content %}
+    <p>Email: {{email}}</p>
+    <p>Password: {{pwd}}</p>
+    <a href="{{ url_for('logout')}}"><button class="btn btn-primary" type="submit">Logout</button></a>
+{% endblock %}

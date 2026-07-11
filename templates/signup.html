@@ -27,6 +27,13 @@
             <label for="phone" class="form-label">Phone Number</label>
             <input type="tel" class="form-control" id="phone_no" name="phone_no">
         </div>
+        <div class="mb-3">
+            <select class="form-select" aria-label="Default select example" name="role" required>
+                <option selected>Choose your role</option>
+                <option value="staff">Staff</option>
+                <option value="user">User</option>
+            </select>
+        </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
     {% if error %}
