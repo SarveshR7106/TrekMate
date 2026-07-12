@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Signup Page{% endblock %}
+
+{% block css %}
+{% endblock %}
+
+{% block content %}
+    <form method="POST" action="{{ url_for('admin_trek_management') }}">
+        <div class="mb-3">
+            <label for="name" class="form-label">Trek Name</label>
+            <input type="text" class="form-control" id="name" name="name">
+        </div>
+        <div class="mb-3">
+            <label for="location" class="form-label">Location</label>
+            <input type="text" class="form-control" id="location" name="location">
+        </div>
+        <div class="mb-3">
+            <label for="difficulty" class="form-label">Difficulty</label>
+            <select name="difficulty">
+                <option selected>Choose Difficulty</option>
+                <option value="hard">Hard</option>
+                <option value="medium">Medium</option>
+                <option value="easy">Easy</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="status" class="form-label">Status</label>
+            <select name="status">
+                <option selected>Choose status</option>
+                <option value="active">Active</option>
+                <option value="closed">Closed</option>
+                <option value="completed">completed</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="start_date" class="form-label">Trek Starting Date</label>
+            <input type="date" class="form-control" id="start_date" name="start_date">
+        </div>
+        <div class="mb-3">
+            <label for="end_date" class="form-label">Trek Ending Date</label>
+            <input type="date" class="form-control" id="end_date" name="end_date">
+        </div>
+        <div class="mb-3">
+            <label for="total_slots" class="form-label">Total Available Slots</label>
+            <input type="number" class="form-control" id="total_slots" name="total_slots">
+        </div>
+        <div class="mb-3">
+            <select class="form-select" aria-label="Default select example" name="assigned_staff_id" required>
+                <option selected>Choose your role</option>
+                {% for availableStaff in available_staff %}
+                    <option value="{{ availableStaff._id }}">{{ availableStaff.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+
+    {% if all_treks %}
+        <table class="table">
+            <th colspan="10">Treks</th>
+            <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Difficulty</th>
+                <th>Status</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Duration</th>
+                <th>Total slots</th>
+                <th>Available slots</th>
+                <th>Assigned Staff</th>
+            </tr>
+            {% for trek in all_treks %}
+                <tr>
+                    <td><p>{{ trek.name }}</p></td>
+                    <td><p>{{ trek.location }}</p></td>
+                    <td><p>{{ trek.difficulty }}</p></td>
+                    <td><p>{{ trek.status }}</p></td>
+                    <td><p>{{ trek.start_date }}</p></td>
+                    <td><p>{{ trek.end_date }}</p></td>
+                    <td><p>{{ trek.duration }} day(s)</p></td>
+                    <td><p>{{ trek.total_slots }}</p></td>
+                    <td><p>{{ trek.available_slots }}</p></td>
+                    <td><p>{{ trek.staff_member.name }}</p></td>
+                    <td><button type="submit">Blacklist</button></td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    <!--If we want to display any error-->
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
+{% endblock %}

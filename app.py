@@ -1,6 +1,9 @@
+#IMPORT STATEMENTS
 from flask import Flask, redirect, url_for, render_template, request, session
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
+#CONFIG DETAILS
 app = Flask(__name__)
 app.secret_key = "HELLOO!!"
 
@@ -9,6 +12,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+#DATABASES
 class users(db.Model):
     _id = db.Column("id", db.Integer, primary_key = True)
     name = db.Column("name", db.String(100))
@@ -16,7 +20,7 @@ class users(db.Model):
     email = db.Column("email", db.String(30), unique=True)
     username = db.Column("username", db.String(100), nullable=False, unique=True)
     password = db.Column("password", db.String(20), nullable=False)
-    status = db.Column("status", db.String(20), default="pending")
+    status = db.Column("status", db.String(20), default="active")
 
     def __init__(self, name, email, phone_no, username, password):
         self.name = name
@@ -49,6 +53,33 @@ class staff(db.Model):
         self.phone_no = phone_no
         self.username = username
         self.password = password
+
+    assigned_treks = db.relationship("treks", backref='staff_member')
+
+class treks(db.Model):
+    _id = db.Column("id", db.Integer, primary_key = True)
+    name = db.Column("name", db.String(100), nullable = False)
+    location = db.Column("location", db.String(100), nullable = False)
+    difficulty = db.Column("difficulty", db.String(100))
+    status = db.Column("status", db.String(100))
+    start_date = db.Column("start_date", db.Date)
+    end_date = db.Column("end_date", db.Date)
+    duration = db.Column("duration", db.Integer)
+    total_slots = db.Column("total_slots", db.Integer)
+    available_slots = db.Column("available_slots", db.Integer)
+    assigned_staff_id = db.Column("assigned_staff_id", db.Integer, db.ForeignKey('staff.id'))
+
+    def __init__(self, name, location, difficulty, status, start_date, end_date, duration, total_slots, available_slots, assigned_staff_id=None):
+        self.name = name
+        self.location = location
+        self.difficulty = difficulty
+        self.status = status
+        self.start_date = start_date
+        self.end_date = end_date
+        self.duration = duration
+        self.total_slots = total_slots
+        self.available_slots = available_slots
+        self.assigned_staff_id = assigned_staff_id
 
 @app.route("/")
 def home():
@@ -118,6 +149,33 @@ def admin_dashboard():
         active_staff = staff.query.filter_by(status="active").all()
         return render_template("admin.html", pending_req=pending_req, active_staff=active_staff)
     
+    else:
+        return redirect(url_for("login"))
+    
+@app.route("/admin/trek-management", methods=["POST", "GET"])
+def admin_trek_management():
+    if "admin" in session:
+        if request.method == "POST":
+            name = request.form["name"]
+            location = request.form["location"]
+            difficulty = request.form["difficulty"]
+            status = request.form["status"]
+            start_date = datetime.strptime(request.form["start_date"], "%Y-%m-%d").date() #We get date in this format only from browser and we cant change that
+            end_date = datetime.strptime(request.form["end_date"], "%Y-%m-%d").date() #So to display it in different format we have to change in jinja2 and html
+            duration = (end_date - start_date).days
+            total_slots = int(request.form["total_slots"])
+            available_slots = total_slots
+            assigned_staff_id = request.form["assigned_staff_id"]
+
+            trek_val = treks(name, location, difficulty, status, start_date, end_date, duration, total_slots, available_slots, assigned_staff_id)
+            db.session.add(trek_val)
+            db.session.commit()
+            return redirect(url_for("admin_dashboard"))
+
+        
+        available_staff = staff.query.filter_by(status="active").all()
+        all_treks = treks.query.all()
+        return render_template("admin_trek_management.html", available_staff=available_staff, all_treks = all_treks)
     else:
         return redirect(url_for("login"))
 

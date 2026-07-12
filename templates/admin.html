@@ -2,31 +2,47 @@
 {% block title %}Admin Page{% endblock %}
 {% block content %}
     <p>Hello admin!!</p>
-    {% for p in pending_req %}
+
+    <a href="{{ url_for('admin_trek_management')}}"><button>Trek Management</button></a>
+    <!-- Pending Requests Table -->
+    {% if pending_req %}
         <table class="table">
+            <th colspan="4">Pending Requests</th>
             <tbody>
-                <tr>
-                    <td>{{ p.name }}</td>
-                    <td>{{ p.email }}</td>
-                    <td>
-                        <form method="POST" action="{{ url_for('staff_approval', staff_id = p._id) }}">
-                            <button type="submit" class="btn btn-success" name="action" value="accept">Accept</button>
-                            <button type="submit" class="btn btn-danger" name="action" value="reject">Reject</button>
-                        </form>
-                    </td>
-                </tr>
+                {% for p in pending_req %}
+                    <tr>
+                        <td>{{ p.name }}</td>
+                        <td>{{ p.email }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('staff_approval', staff_id = p._id) }}">
+                                <button type="submit" class="btn btn-success" name="action" value="accept">Accept</button>
+                                <button type="submit" class="btn btn-danger" name="action" value="reject">Reject</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
             </tbody>
         </table>
-    {% endfor %}
+    {% endif %}
 
-    {% for a in active_staff %}
-        <table class="table" title="Active Staff">
+    <!-- Active Staff Table -->
+    {% if active_staff %}
+        <table class="table">
+            <th colspan="4">Active Staff</th>
             <tr>
-                <td><p>Name: {{ a.name }}</p></td>
-                <td><p>Username: {{ a.username }}</p></td>
-                <td><p>Email: {{ a.email }}</p></td>
-                <button type="submit">Blacklist</button>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Action</th>
             </tr>
+            {% for a in active_staff %}
+                <tr>
+                    <td><p>{{ a.name }}</p></td>
+                    <td><p>{{ a.username }}</p></td>
+                    <td><p>{{ a.email }}</p></td>
+                    <td><button type="submit">Blacklist</button></td>
+                </tr>
+            {% endfor %}
         </table>
-    {% endfor %}
+    {% endif %}
 {% endblock %}
