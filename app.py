@@ -20,7 +20,7 @@ class users(db.Model):
     email = db.Column("email", db.String(30), unique=True)
     username = db.Column("username", db.String(100), nullable=False, unique=True)
     password = db.Column("password", db.String(20), nullable=False)
-    status = db.Column("status", db.String(20), default="active")
+    status = db.Column("status", db.String(20), default="active")                   #active, blacklisted
 
     def __init__(self, name, email, phone_no, username, password):
         self.name = name
@@ -45,7 +45,7 @@ class staffs(db.Model):
     email = db.Column("email", db.String(30), unique=True)
     username = db.Column("username", db.String(100), nullable=False, unique=True)
     password = db.Column("password", db.String(20), nullable=False)
-    status = db.Column("status", db.String(20), default="pending") #pending, active, rejected, blacklisted, assigned
+    status = db.Column("status", db.String(20), default="pending")          #pending, active, rejected, blacklisted, assigned
 
     def __init__(self, name, email, phone_no, username, password):
         self.name = name
@@ -61,7 +61,7 @@ class treks(db.Model):
     name = db.Column("name", db.String(100), nullable = False)
     location = db.Column("location", db.String(100), nullable = False)
     difficulty = db.Column("difficulty", db.String(100))
-    status = db.Column("status", db.String(100)) #open, closed, completed
+    status = db.Column("status", db.String(100), default="open")                #active, closed, completed
     start_date = db.Column("start_date", db.Date)
     end_date = db.Column("end_date", db.Date)
     duration = db.Column("duration", db.Integer)
@@ -102,7 +102,7 @@ def home():
     return render_template("home.html")
 
 #LOGIN AUTHENTICATION AND ACCOUNT REGISTRATION
-@app.route("/signup", methods=["POST", "GET"])
+@app.route("/signup", methods=["POST", "GET"])          #Signup page
 def signup():
     if request.method == "POST":
         name = request.form["name"]
@@ -144,7 +144,7 @@ def signup():
         return render_template("signup.html")
 
 @app.route("/login", methods = ['POST', 'GET'])
-def login():
+def login():                                        #Login page
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
@@ -163,7 +163,7 @@ def login():
             if role == "staff":
                 if found_user.status == "pending":
                     return render_template("login.html", error="The account approval is still pending!")
-                elif found_user.status == "accepted":
+                elif found_user.status == "active" or found_user.status == "assigned":
                     session[role] = found_user._id
                     return redirect(url_for(f"{role}_dashboard"))
                 else:
@@ -176,18 +176,46 @@ def login():
     else:
         return render_template("login.html")
     
+@app.route("/logout")
+def logout():                                           #Logout Page
+    session.clear()
+    return render_template("logout.html")
+
+#ADMIN
 @app.route("/admin")
-def admin_dashboard():
+def admin_dashboard():                                  #Admin Dashboard
     if "admin" in session:
+        all_treks = treks.query.all()
+        total_active_treks = treks.query.filter_by(status="active").count()
+        total_treks = treks.query.count()
+
+        active_staff = staffs.query.filter(staffs.status.in_(["active", "assigned"])).all()
+        total_staff = staffs.query.count()
+
+        total_users = users.query.count()
+
+        all_bookings = bookings.query.all()
+        total_bookings = bookings.query.count()
+
         pending_req = staffs.query.filter_by(status="pending").all()
-        active_staff = staffs.query.filter_by(status="active").all()
-        return render_template("admin.html", pending_req=pending_req, active_staff=active_staff)
+        return render_template(
+            "admin.html", 
+            pending_req=pending_req, 
+            active_staff=active_staff, 
+            all_bookings=all_bookings, 
+            all_treks = all_treks, 
+            total_staff=total_staff,
+            total_active_treks=total_active_treks, 
+            total_treks=total_treks, 
+            total_bookings=total_bookings,
+            total_users=total_users
+        )
     
     else:
         return redirect(url_for("login"))
     
 @app.route("/admin/trek-management", methods=["POST", "GET"])
-def admin_trek_management():
+def admin_trek_management():                                        #Admin Trek Management
     if "admin" in session:
         if request.method == "POST":
             name = request.form["name"]
@@ -214,12 +242,112 @@ def admin_trek_management():
         return render_template("admin_trek_management.html", available_staff=available_staff, all_treks = all_treks)
     else:
         return redirect(url_for("login"))
+    
+@app.route("/admin/search", methods=["POST"])
+def admin_search():
+    if "admin" not in session:
+        return redirect(url_for("login"))
+
+    search_id = request.form["id"]
+    search_type = request.form["val"]
+
+    model = {"trek": treks, "staff": staffs, "user": users}.get(search_type)
+
+    search_result = None
+    if model:
+        search_result = db.session.get(model, search_id)
+
+    #Getting everything the dashboard normally needs again
+    all_treks = treks.query.all()
+    total_active_treks = treks.query.filter_by(status="active").count()
+    total_treks = treks.query.count()
+    active_staff = staffs.query.filter(staffs.status.in_(["active", "assigned"])).all()
+    total_staff = staffs.query.count()
+    total_users = users.query.count()
+    all_bookings = bookings.query.all()
+    total_bookings = bookings.query.count()
+    pending_req = staffs.query.filter_by(status="pending").all()
+
+    return render_template(
+        "admin.html",
+        pending_req=pending_req,
+        active_staff=active_staff,
+        all_bookings=all_bookings,
+        all_treks=all_treks,
+        total_staff=total_staff,
+        total_active_treks=total_active_treks,
+        total_treks=total_treks,
+        total_bookings=total_bookings,
+        total_users=total_users,
+        search_result=search_result,
+        search_type=search_type
+    )
+
+@app.route("/admin/reassign-staff/<int:trek_id>", methods=["POST"])
+def reassign_staff(trek_id):
+    if "admin" not in session:
+        return redirect(url_for("login"))
+
+    found_trek = db.session.get(treks, trek_id)
+    new_staff_id = int(request.form["assigned_staff_id"])
+
+    if found_trek:
+        if found_trek.assigned_staff_id:
+            old_staff = db.session.get(staffs, found_trek.assigned_staff_id)
+            if old_staff:
+                old_staff.status = "active"
+
+        found_trek.assigned_staff_id = new_staff_id
+        new_staff = db.session.get(staffs, new_staff_id)
+        if new_staff:
+            new_staff.status = "assigned"
+
+        db.session.commit()
+
+    return redirect(url_for("admin_trek_management"))
+
+@app.route("/admin/staff-blacklist/<int:staff_id>", methods=["POST"])
+def staff_blacklist(staff_id):
+    if "admin" not in session:
+        return redirect(url_for("login"))
+
+    found_staff = db.session.get(staffs, staff_id)
+    if found_staff:
+        # Free up any trek this staff member was assigned to
+        assigned_trek = treks.query.filter_by(assigned_staff_id=staff_id).first()
+        if assigned_trek:
+            assigned_trek.assigned_staff_id = None
+
+        found_staff.status = "blacklisted"
+        db.session.commit()
+
+    return redirect(url_for("admin_dashboard"))
+
+@app.route("/admin/user-blacklist/<int:user_id>", methods=["POST"])
+def user_blacklist(user_id):
+    if "admin" not in session:
+        return redirect(url_for("login"))
+
+    found_user = db.session.get(users, user_id)
+    if found_user:
+        active_bookings = bookings.query.filter_by(user_id=user_id, status="booked").all()
+        for b in active_bookings:
+            found_trek = db.session.get(treks, b.trek_id)
+            if found_trek:
+                found_trek.available_slots += 1
+                found_trek.status = "active"
+            b.status = "cancelled"
+
+        found_user.status = "blacklisted"
+        db.session.commit()
+
+    return redirect(url_for("admin_dashboard"))
 
 @app.route("/user")
 def user_dashboard():
     if "user" in session:
         all_treks = treks.query.all()
-        user_bookings = bookings.query.filter_by(user_id=session["user"]).all()
+        user_bookings = bookings.query.filter_by(user_id=session["user"], status="booked").all()
         booked_trek_ids = [i.trek_id for i in user_bookings]
 
         return render_template("user.html", all_treks=all_treks, booked_trek_ids=booked_trek_ids)
@@ -291,13 +419,6 @@ def staff_approval(staff_id): #Flask directly passes the attribute and for a spl
 
     db.session.commit()
     return redirect(url_for("admin_dashboard"))
-
-@app.route("/logout")
-def logout():
-    print(session)
-    session.clear()
-    print(session)
-    return render_template("logout.html")
 
 if __name__ == "__main__":
     with app.app_context():

@@ -38,7 +38,7 @@
                         <td><p>No slots left</p></td>
                     {% elif trek.status == 'completed' %}
                         <td><p>Trek is completed</p></td>
-                    {% elif trek.status == 'open' %}
+                    {% elif trek.status == 'active' %}
                         <td>
                             <form method="POST" action="{{ url_for('trek_booking', trek_id=trek._id) }}">
                                 <button type="submit">Book Slot</button>

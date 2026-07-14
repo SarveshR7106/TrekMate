@@ -8,15 +8,15 @@
     <form method="POST" action="{{ url_for('admin_trek_management') }}">
         <div class="mb-3">
             <label for="name" class="form-label">Trek Name</label>
-            <input type="text" class="form-control" id="name" name="name">
+            <input type="text" class="form-control" id="name" name="name" required>
         </div>
         <div class="mb-3">
             <label for="location" class="form-label">Location</label>
-            <input type="text" class="form-control" id="location" name="location">
+            <input type="text" class="form-control" id="location" name="location" required>
         </div>
         <div class="mb-3">
             <label for="difficulty" class="form-label">Difficulty</label>
-            <select name="difficulty">
+            <select name="difficulty" required>
                 <option selected>Choose Difficulty</option>
                 <option value="hard">Hard</option>
                 <option value="medium">Medium</option>
@@ -34,15 +34,15 @@
         </div>
         <div class="mb-3">
             <label for="start_date" class="form-label">Trek Starting Date</label>
-            <input type="date" class="form-control" id="start_date" name="start_date">
+            <input type="date" class="form-control" id="start_date" name="start_date" required>
         </div>
         <div class="mb-3">
             <label for="end_date" class="form-label">Trek Ending Date</label>
-            <input type="date" class="form-control" id="end_date" name="end_date">
+            <input type="date" class="form-control" id="end_date" name="end_date" required>
         </div>
         <div class="mb-3">
             <label for="total_slots" class="form-label">Total Available Slots</label>
-            <input type="number" class="form-control" id="total_slots" name="total_slots">
+            <input type="number" class="form-control" id="total_slots" name="total_slots" required>
         </div>
         <div class="mb-3">
             <select class="form-select" aria-label="Default select example" name="assigned_staff_id" required>
@@ -84,7 +84,17 @@
                     <td><p>{{ trek.available_slots }}</p></td>
                     <td><p>{{ trek.staff_member.name }}</p></td>
                     <td>
-                        <button type="submit">Blacklist</button>
+                        <form method="POST" action="{{ url_for('reassign_staff', trek_id=trek._id) }}">
+                            <select class="form-select" aria-label="Default select example" name="assigned_staff_id" required>
+                                <option value="" disabled selected>Choose staff</option>
+                                {% for availableStaff in available_staff %}
+                                    <option value="{{ availableStaff._id }}" {% if trek.staff_member and availableStaff._id == trek.staff_member._id %}selected{% endif %}>
+                                        {{ availableStaff.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-primary btn-sm">Reassign</button>
+                        </form>
                     </td>
                 </tr>
             {% endfor %}
