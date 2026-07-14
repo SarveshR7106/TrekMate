@@ -112,10 +112,17 @@ def signup():
         password = request.form["password"]
         role = request.form["role"]
 
-        #Backend validation for phone number
+        #Backend validation for signup page
         if len(phone_no) != 10:
             return render_template("signup.html", error="Enter a valid phone number")
+        if '@' not in email or '.' not in email:
+            return render_template("signup.html", error="Enter a valid Email ID")
+        if not username.isalnum():
+            return render_template("signup.html", error="Enter a valid username")
+        if len(password) <= 4:
+            return render_template("signup.html", error="Password must contain more than 4 characters")
 
+        
         role_val = {"user": users, "staff": staffs}[role]
 
         #checking if there is already existing email
