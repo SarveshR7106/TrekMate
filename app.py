@@ -38,14 +38,14 @@ class admin(db.Model):
         self.username = username
         self.password = password
 
-class staff(db.Model):   
+class staffs(db.Model):   
     _id = db.Column("id", db.Integer, primary_key = True)
     name = db.Column("name", db.String(100))
     phone_no = db.Column("phone_no", db.Integer)
     email = db.Column("email", db.String(30), unique=True)
     username = db.Column("username", db.String(100), nullable=False, unique=True)
     password = db.Column("password", db.String(20), nullable=False)
-    status = db.Column("status", db.String(20), default="pending")
+    status = db.Column("status", db.String(20), default="pending") #pending, active, rejected, blacklisted, assigned
 
     def __init__(self, name, email, phone_no, username, password):
         self.name = name
@@ -61,13 +61,13 @@ class treks(db.Model):
     name = db.Column("name", db.String(100), nullable = False)
     location = db.Column("location", db.String(100), nullable = False)
     difficulty = db.Column("difficulty", db.String(100))
-    status = db.Column("status", db.String(100))
+    status = db.Column("status", db.String(100)) #open, closed, completed
     start_date = db.Column("start_date", db.Date)
     end_date = db.Column("end_date", db.Date)
     duration = db.Column("duration", db.Integer)
     total_slots = db.Column("total_slots", db.Integer)
     available_slots = db.Column("available_slots", db.Integer)
-    assigned_staff_id = db.Column("assigned_staff_id", db.Integer, db.ForeignKey('staff.id'))
+    assigned_staff_id = db.Column("assigned_staff_id", db.Integer, db.ForeignKey('staffs.id'))
 
     def __init__(self, name, location, difficulty, status, start_date, end_date, duration, total_slots, available_slots, assigned_staff_id=None):
         self.name = name
@@ -111,7 +111,7 @@ def signup():
         password = request.form["password"]
         role = request.form["role"]
 
-        role_val = {"user": users, "staff": staff}[role]
+        role_val = {"user": users, "staff": staffs}[role]
 
         #checking if there is already existing email
         found_user = role_val.query.filter_by(email=email).first()
@@ -138,14 +138,14 @@ def login():
         password = request.form["password"]
         role = request.form["role"]
 
-        table = {"admin": admin, "staff": staff, "user": users}[role]
+        table = {"admin": admin, "staff": staffs, "user": users}[role]
 
         found_user = table.query.filter_by(username=username).first()
         if found_user and found_user.password == password:
             if role == "staff":
                 if found_user.status == "pending":
                     return render_template("login.html", error="The account approval is still pending!")
-                elif found_user.status == "active":
+                elif found_user.status == "accepted":
                     session[role] = found_user._id
                     return redirect(url_for(f"{role}_dashboard"))
                 else:
@@ -161,8 +161,8 @@ def login():
 @app.route("/admin")
 def admin_dashboard():
     if "admin" in session:
-        pending_req = staff.query.filter_by(status="pending").all()
-        active_staff = staff.query.filter_by(status="active").all()
+        pending_req = staffs.query.filter_by(status="pending").all()
+        active_staff = staffs.query.filter_by(status="active").all()
         return render_template("admin.html", pending_req=pending_req, active_staff=active_staff)
     
     else:
@@ -185,13 +185,13 @@ def admin_trek_management():
 
             trek_val = treks(name, location, difficulty, status, start_date, end_date, duration, total_slots, available_slots, assigned_staff_id)
             db.session.add(trek_val)
-            assigned_staff = db.session.get(staff, assigned_staff_id)
+            assigned_staff = db.session.get(staffs, assigned_staff_id)
             assigned_staff.status = "assigned"
             db.session.commit()
             return redirect(url_for("admin_dashboard"))
 
         
-        available_staff = staff.query.filter_by(status="active").all()
+        available_staff = staffs.query.filter_by(status="active").all()
         all_treks = treks.query.all()
         return render_template("admin_trek_management.html", available_staff=available_staff, all_treks = all_treks)
     else:
@@ -251,7 +251,7 @@ def trek_cancelling(trek_id):
 @app.route("/staff")
 def staff_dashboard():
     if "staff" in session:
-        found_staff = staff.query.get(session["staff"])
+        found_staff = staffs.query.get(session["staff"])
         email = found_staff.email
         return render_template("staff.html", email=email)
     else:
@@ -262,7 +262,7 @@ def staff_approval(staff_id): #Flask directly passes the attribute and for a spl
     if "admin" not in session:
         return redirect(url_for("login"))
     
-    found_staff = db.session.get(staff, staff_id)
+    found_staff = db.session.get(staffs, staff_id)
     action = request.form["action"]
     print(action)
 
