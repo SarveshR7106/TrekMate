@@ -1,7 +1,86 @@
 {% extends "base.html" %}
 {% block title %}Staff Page{% endblock %}
 {% block content %}
-    <p>Email: {{email}}</p>
-    <p>Password: {{pwd}}</p>
-    <a href="{{ url_for('logout')}}"><button class="btn btn-primary" type="submit">Logout</button></a>
+    <p>Email: {{ email }}</p>
+    <a href="{{ url_for('logout') }}"><button class="btn btn-primary" type="submit">Logout</button></a>
+
+    <h3>My Assigned Treks</h3>
+    {% if assigned_treks %}
+        <table class="table">
+            <th colspan="10">Treks</th>
+            <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Difficulty</th>
+                <th>Status</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Duration</th>
+                <th>Available Slots</th>
+                <th>Registered Trekkers</th>
+                <th>Action</th>
+            </tr>
+            {% for trek in assigned_treks %}
+                <tr>
+                    <td><p>{{ trek.name }}</p></td>
+                    <td><p>{{ trek.location }}</p></td>
+                    <td><p>{{ trek.difficulty }}</p></td>
+                    <td><p>{{ trek.status }}</p></td>
+                    <td><p>{{ trek.start_date }}</p></td>
+                    <td><p>{{ trek.end_date }}</p></td>
+                    <td><p>{{ trek.duration }} day(s)</p></td>
+                    <td><p>{{ trek.available_slots }}</p></td>
+                    <td><p>{{ trek_bookings[trek._id]|length }}</p></td>
+                    {% if trek.status == 'active' %}
+                        <td>
+                            <form method="POST" action="{{ url_for('staff_trek_close', trek_id=trek._id) }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Close</button>
+                            </form>
+                        </td>
+                    {% elif trek.status == 'closed' %}
+                        <td>
+                            <form method="POST" action="{{ url_for('staff_trek_open', trek_id=trek._id) }}">
+                                <button type="submit" class="btn btn-success btn-sm">Open</button>
+                            </form>
+                        </td>
+                    {% elif trek.status == 'completed' %}
+                        <td><p>Trek completed</p></td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>You have no assigned treks.</p>
+    {% endif %}
+
+    <h3>Registered Trekkers</h3>
+    {% for trek in assigned_treks %}
+        <h5>{{ trek.name }} ({{ trek.location }})</h5>
+        {% if trek_bookings[trek._id] %}
+            <table class="table">
+                <tr>
+                    <th>User ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Booking Date</th>
+                    <th>Action</th>
+                </tr>
+                {% for b in trek_bookings[trek._id] %}
+                    <tr>
+                        <td>{{ b.booked_user._id }}</td>
+                        <td>{{ b.booked_user.name }}</td>
+                        <td>{{ b.booked_user.email }}</td>
+                        <td>{{ b.booking_date.split('.')[0] if b.booking_date is string else b.booking_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('staff_remove_participant', booking_id=b._id) }}">
+                                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p>No participants registered yet.</p>
+        {% endif %}
+    {% endfor %}
 {% endblock %}

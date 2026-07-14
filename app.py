@@ -343,6 +343,23 @@ def user_blacklist(user_id):
 
     return redirect(url_for("admin_dashboard"))
 
+@app.route("/admin/staff-approval/<int:staff_id>", methods=['POST']) #This <int:staff_id> is for flask to know which staff (based on id) was accepted/rejected
+def staff_approval(staff_id): #Flask directly passes the attribute and for a split second only it stays in that URL and redirects back to admin
+    if "admin" not in session:
+        return redirect(url_for("login"))
+    
+    found_staff = db.session.get(staffs, staff_id)
+    action = request.form["action"]
+    print(action)
+
+    if action == "accept":
+        found_staff.status = "active"
+    elif action == "reject":
+        found_staff.status = "rejected"
+
+    db.session.commit()
+    return redirect(url_for("admin_dashboard"))
+
 @app.route("/user")
 def user_dashboard():
     if "user" in session:
@@ -353,6 +370,30 @@ def user_dashboard():
         return render_template("user.html", all_treks=all_treks, booked_trek_ids=booked_trek_ids)
     else:
         return redirect(url_for("login"))
+    
+@app.route("/user/search", methods=["POST"])
+def user_search():
+    if "user" not in session:
+        return redirect(url_for("login"))
+
+    search_id = request.form["id"]
+    search_result = db.session.get(treks, search_id)
+
+    # Re-fetch everything the dashboard normally needs
+    all_treks = treks.query.all()
+    user_id = session["user"]
+    all_user_bookings = bookings.query.filter_by(user_id=user_id).order_by(bookings.booking_date.desc()).all()
+    active_bookings = [b for b in all_user_bookings if b.status == "booked"]
+    booked_trek_ids = [b.trek_id for b in active_bookings]
+
+    return render_template(
+        "user.html",
+        all_treks=all_treks,
+        booked_trek_ids=booked_trek_ids,
+        active_bookings=active_bookings,
+        all_user_bookings=all_user_bookings,
+        search_result=search_result
+    )
     
 @app.route("/user/trek_booking/<int:trek_id>", methods=["POST"])
 def trek_booking(trek_id):
@@ -396,29 +437,62 @@ def trek_cancelling(trek_id):
     
 @app.route("/staff")
 def staff_dashboard():
-    if "staff" in session:
-        found_staff = staffs.query.get(session["staff"])
-        email = found_staff.email
-        return render_template("staff.html", email=email)
-    else:
+    if "staff" not in session:
         return redirect(url_for("login"))
 
-@app.route("/admin/staff-approval/<int:staff_id>", methods=['POST']) #This <int:staff_id> is for flask to know which staff (based on id) was accepted/rejected
-def staff_approval(staff_id): #Flask directly passes the attribute and for a split second only it stays in that URL and redirects back to admin
-    if "admin" not in session:
+    found_staff = db.session.get(staffs, session["staff"])
+    assigned_treks = treks.query.filter_by(assigned_staff_id=found_staff._id).all()
+
+    trek_bookings = {}
+    for trek in assigned_treks:
+        trek_bookings[trek._id] = bookings.query.filter_by(trek_id=trek._id, status="booked").all()
+
+    return render_template(
+        "staff.html",
+        email=found_staff.email,
+        assigned_treks=assigned_treks,
+        trek_bookings=trek_bookings
+    )
+
+@app.route("/staff/trek-open/<int:trek_id>", methods=["POST"])
+def staff_trek_open(trek_id):
+    if "staff" not in session:
         return redirect(url_for("login"))
-    
-    found_staff = db.session.get(staffs, staff_id)
-    action = request.form["action"]
-    print(action)
 
-    if action == "accept":
-        found_staff.status = "active"
-    elif action == "reject":
-        found_staff.status = "rejected"
+    found_trek = db.session.get(treks, trek_id)
+    if found_trek and found_trek.assigned_staff_id == session["staff"]:
+        found_trek.status = "active"
+        db.session.commit()
 
-    db.session.commit()
-    return redirect(url_for("admin_dashboard"))
+    return redirect(url_for("staff_dashboard"))
+
+@app.route("/staff/trek-close/<int:trek_id>", methods=["POST"])
+def staff_trek_close(trek_id):
+    if "staff" not in session:
+        return redirect(url_for("login"))
+
+    found_trek = db.session.get(treks, trek_id)
+    if found_trek and found_trek.assigned_staff_id == session["staff"]:
+        found_trek.status = "closed"
+        db.session.commit()
+
+    return redirect(url_for("staff_dashboard"))
+
+@app.route("/staff/remove-participant/<int:booking_id>", methods=["POST"])          #Same code as user blacklisting just changed to staff context
+def staff_remove_participant(booking_id):
+    if "staff" not in session:
+        return redirect(url_for("login"))
+
+    found_booking = db.session.get(bookings, booking_id)
+    if found_booking:
+        found_trek = db.session.get(treks, found_booking.trek_id)
+        if found_trek and found_trek.assigned_staff_id == session["staff"]:
+            found_booking.status = "cancelled"
+            found_trek.available_slots += 1
+            found_trek.status = "active"
+            db.session.commit()
+
+    return redirect(url_for("staff_dashboard"))
 
 if __name__ == "__main__":
     with app.app_context():
