@@ -101,6 +101,7 @@ class bookings(db.Model):
 def home():
     return render_template("home.html")
 
+#LOGIN AUTHENTICATION AND ACCOUNT REGISTRATION
 @app.route("/signup", methods=["POST", "GET"])
 def signup():
     if request.method == "POST":
@@ -110,6 +111,10 @@ def signup():
         username = request.form["username"]
         password = request.form["password"]
         role = request.form["role"]
+
+        #Backend validation for phone number
+        if len(phone_no) != 10:
+            return render_template("signup.html", error="Enter a valid phone number")
 
         role_val = {"user": users, "staff": staffs}[role]
 
