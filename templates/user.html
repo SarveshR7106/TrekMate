@@ -1,6 +1,53 @@
 {% extends "base.html" %}
 {% block title %}User Page{% endblock %}
 {% block content %}
+        <div>
+            <form action="{{ url_for('user_search') }}" method="POST">
+                <div class="mb-3">
+                    <label for="id" class="form-label">Trek ID</label>
+                    <input type="number" class="form-control" id="id" name="id" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Search</button>
+            </form>
+        </div>
+
+        {% if search_result is defined %}
+            <h4>Search Result</h4>
+            {% if search_result %}
+                <table class="table">
+                    <tr>
+                        <th>ID</th><th>Name</th><th>Location</th><th>Difficulty</th>
+                        <th>Status</th><th>Start Date</th><th>End Date</th><th>Available Slots</th>
+                    </tr>
+                    <tr>
+                        <td>{{ search_result._id }}</td>
+                        <td>{{ search_result.name }}</td>
+                        <td>{{ search_result.location }}</td>
+                        <td>{{ search_result.difficulty }}</td>
+                        <td>{{ search_result.status }}</td>
+                        <td>{{ search_result.start_date }}</td>
+                        <td>{{ search_result.end_date }}</td>
+                        <td>{{ search_result.available_slots }}</td>
+                    </tr>
+                </table>
+            {% else %}
+                <p>No trek found with that ID.</p>
+            {% endif %}
+        {% endif %}
+
+        <form method="GET" action="{{ url_for('user_dashboard') }}" class="mb-3">
+            <select name="difficulty" class="form-select" style="display:inline-block; width:auto;">
+                <option value="">All Difficulties</option>
+                <option value="easy" {% if selected_difficulty == 'easy' %}selected{% endif %}>Easy</option>
+                <option value="medium" {% if selected_difficulty == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="hard" {% if selected_difficulty == 'hard' %}selected{% endif %}>Hard</option>
+            </select>
+            <input type="text" name="location" class="form-control" style="display:inline-block; width:auto;"
+                placeholder="Filter by location" value="{{ selected_location or '' }}">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-secondary">Clear</a>
+        </form>
+
         {% if all_treks %}
         <table class="table">
             <th colspan="10">Treks</th>
