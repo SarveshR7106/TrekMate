@@ -1,7 +1,54 @@
 {% extends "base.html" %}
 {% block title %}User Page{% endblock %}
 {% block content %}
-    <p>Email: {{email}}</p>
-    <p>Password: {{pwd}}</p>
-    <a href="{{ url_for('logout')}}"><button class="btn btn-primary" type="submit">Logout</button></a>
+        {% if all_treks %}
+        <table class="table">
+            <th colspan="10">Treks</th>
+            <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Difficulty</th>
+                <th>Status</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Duration</th>
+                <th>Available slots</th>
+                <th>Booking</th>
+            </tr>
+            {% for trek in all_treks %}
+                <tr>
+                    <td><p>{{ trek.name }}</p></td>
+                    <td><p>{{ trek.location }}</p></td>
+                    <td><p>{{ trek.difficulty }}</p></td>
+                    <td><p>{{ trek.status }}</p></td>
+                    <td><p>{{ trek.start_date }}</p></td>
+                    <td><p>{{ trek.end_date }}</p></td>
+                    <td><p>{{ trek.duration }} day(s)</p></td>
+                    <td><p>{{ trek.available_slots }}</p></td>
+                    {% if trek._id in booked_trek_ids %}
+                        <td>
+                            <p>Already booked</p>
+                            <form method="POST" action="{{ url_for('trek_cancelling', trek_id=trek._id) }}">
+                                <button type="submit">Cancel</button>
+                            </form>
+                        </td>
+
+                    {% elif trek.status == 'closed' %}
+                        <td><p>Can't book a slot</p></td>
+                    {% elif trek.available_slots <= 0 %}
+                        <td><p>No slots left</p></td>
+                    {% else %}
+                        <td>
+                            <form method="POST" action="{{ url_for('trek_booking', trek_id=trek._id) }}">
+                                <button type="submit">Book Slot</button>
+                            </form>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+    {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+    {% endif %}
 {% endblock %}

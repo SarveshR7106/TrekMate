@@ -1,5 +1,5 @@
 #IMPORT STATEMENTS
-from flask import Flask, redirect, url_for, render_template, request, session
+from flask import Flask, redirect, url_for, render_template, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 
@@ -80,6 +80,22 @@ class treks(db.Model):
         self.total_slots = total_slots
         self.available_slots = available_slots
         self.assigned_staff_id = assigned_staff_id
+
+class bookings(db.Model):
+    _id = db.Column("id", db.Integer, primary_key = True)
+    booking_date = db.Column("booking_date", default=datetime.now)
+    status = db.Column("status", db.String)
+    user_id = db.Column("user_id", db.Integer, db.ForeignKey('users.id'))
+    trek_id = db.Column("trek_id", db.Integer, db.ForeignKey('treks.id'))
+
+    def __int__(self, booking_date, status, user_id=None, trek_id=None):
+        self.booking_date = booking_date
+        self.status = status
+        self.user_id = user_id
+        self.trek_id = trek_id
+
+    booked_user = db.relationship('users', backref='bookings')
+    booked_trek = db.relationship('treks', backref='bookings')
 
 @app.route("/")
 def home():
@@ -169,6 +185,8 @@ def admin_trek_management():
 
             trek_val = treks(name, location, difficulty, status, start_date, end_date, duration, total_slots, available_slots, assigned_staff_id)
             db.session.add(trek_val)
+            assigned_staff = db.session.get(staff, assigned_staff_id)
+            assigned_staff.status = "assigned"
             db.session.commit()
             return redirect(url_for("admin_dashboard"))
 
@@ -182,11 +200,53 @@ def admin_trek_management():
 @app.route("/user")
 def user_dashboard():
     if "user" in session:
-        found_user = users.query.get(session["user"])
-        email = found_user.email
-        return render_template("user.html", email = email)
+        all_treks = treks.query.all()
+        user_bookings = bookings.query.filter_by(user_id=session["user"]).all()
+        booked_trek_ids = [i.trek_id for i in user_bookings]
+
+        return render_template("user.html", all_treks=all_treks, booked_trek_ids=booked_trek_ids)
     else:
         return redirect(url_for("login"))
+    
+@app.route("/user/trek_booking/<int:trek_id>", methods=["POST"])
+def trek_booking(trek_id):
+    if "user" not in session:
+        return redirect(url_for('login'))
+    
+    user_id = session["user"]
+    found_trek = db.session.get(treks, trek_id)
+
+    if found_trek:
+
+        #To avoid overbooking
+        if found_trek.available_slots <= 0:
+            flash("There are no more slots")
+            return redirect(url_for("user_dashboard"))
+        
+        new_booking = bookings(status="booked", user_id=user_id, trek_id=trek_id)
+        found_trek.available_slots -= 1
+        db.session.add(new_booking)
+        db.session.commit()
+        return redirect(url_for("user_dashboard"))
+    else:
+        return redirect(url_for("user_dashboard"))
+    
+@app.route("/user/trek_cancelling/<int:trek_id>", methods=["POST"])
+def trek_cancelling(trek_id):
+    if "user" not in session:
+        return redirect(url_for('login'))
+    
+    user_id = session["user"]
+    found_trek = db.session.get(treks, trek_id)
+    found_booking = bookings.query.filter_by(trek_id=trek_id, user_id=user_id, status="booked").first()
+    if found_trek:
+        found_booking.status = "cancelled"
+        found_trek.available_slots += 1
+        found_trek.status = "active"
+        db.session.commit()
+        return redirect(url_for("user_dashboard"))
+    else:
+        return redirect(url_for("user_dashboard"))
     
 @app.route("/staff")
 def staff_dashboard():
@@ -196,7 +256,6 @@ def staff_dashboard():
         return render_template("staff.html", email=email)
     else:
         return redirect(url_for("login"))
-
 
 @app.route("/admin/staff-approval/<int:staff_id>", methods=['POST']) #This <int:staff_id> is for flask to know which staff (based on id) was accepted/rejected
 def staff_approval(staff_id): #Flask directly passes the attribute and for a split second only it stays in that URL and redirects back to admin

@@ -29,7 +29,7 @@
                 <option selected>Choose status</option>
                 <option value="active">Active</option>
                 <option value="closed">Closed</option>
-                <option value="completed">completed</option>
+                <option value="completed">Completed</option>
             </select>
         </div>
         <div class="mb-3">
@@ -46,7 +46,7 @@
         </div>
         <div class="mb-3">
             <select class="form-select" aria-label="Default select example" name="assigned_staff_id" required>
-                <option selected>Choose your role</option>
+                <option selected>Choose staff</option>
                 {% for availableStaff in available_staff %}
                     <option value="{{ availableStaff._id }}">{{ availableStaff.name }}</option>
                 {% endfor %}
@@ -57,7 +57,7 @@
 
     {% if all_treks %}
         <table class="table">
-            <th colspan="10">Treks</th>
+            <th colspan="11">Treks</th>
             <tr>
                 <th>Name</th>
                 <th>Location</th>
@@ -69,6 +69,7 @@
                 <th>Total slots</th>
                 <th>Available slots</th>
                 <th>Assigned Staff</th>
+                <th>Action</th>
             </tr>
             {% for trek in all_treks %}
                 <tr>
@@ -82,7 +83,9 @@
                     <td><p>{{ trek.total_slots }}</p></td>
                     <td><p>{{ trek.available_slots }}</p></td>
                     <td><p>{{ trek.staff_member.name }}</p></td>
-                    <td><button type="submit">Blacklist</button></td>
+                    <td>
+                        <button type="submit">Blacklist</button>
+                    </td>
                 </tr>
             {% endfor %}
         </table>
