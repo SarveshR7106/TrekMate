@@ -120,7 +120,7 @@ def signup():
         if not username.isalnum():
             return render_template("signup.html", error="Enter a valid username")
         if len(password) <= 4:
-            return render_template("signup.html", error="Password must contain more than 4 characters")
+            return render_template("signup.html", error="Password must contain 5 or more characters")
 
         
         role_val = {"user": users, "staff": staffs}[role]
@@ -149,6 +149,12 @@ def login():
         username = request.form["username"]
         password = request.form["password"]
         role = request.form["role"]
+
+        #Backend validation for login page
+        if not username.isalnum():
+            return render_template("signup.html", error="Enter a valid username")
+        if len(password) <= 4:
+            return render_template("signup.html", error="Password must contain 5 or more characters")
 
         table = {"admin": admin, "staff": staffs, "user": users}[role]
 
