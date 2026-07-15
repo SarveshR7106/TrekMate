@@ -1,129 +1,263 @@
 {% extends "base.html" %}
 {% block title %}Admin Page{% endblock %}
 {% block content %}
-    <p>Hello admin!!</p>
+    <p class="lead text-center">Hello admin!!</p>
 
-    <div>
-        <p>Total number of treks: {{ total_treks }}</p>
-        <p>Total number of bookings: {{ total_bookings }}</p>
-        <p>Total number of users: {{ total_users }}</p>
-        <p>Total number of staffs: {{ total_staff }}</p>
-    </div>
-
-    <div>
-        <a href="{{ url_for('admin_trek_management')}}"><button>Trek Management</button></a>
+    <!-- Details -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h6 class="text-muted">Total Treks</h6>
+                <h2 class="fw-bold" style="color:#1a3c2e;">{{ total_treks }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h6 class="text-muted">Total Bookings</h6>
+                <h2 class="fw-bold" style="color:#1a3c2e;">{{ total_bookings }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h6 class="text-muted">Total Users</h6>
+                <h2 class="fw-bold" style="color:#1a3c2e;">{{ total_users }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm text-center p-3">
+                <h6 class="text-muted">Total Staff</h6>
+                <h2 class="fw-bold" style="color:#1a3c2e;">{{ total_staff }}</h2>
+            </div>
+        </div>
     </div>
 
     <!-- Pending Requests Table -->
     {% if pending_req %}
-        <table class="table">
-            <th colspan="4">Pending Requests</th>
-            <tbody>
-                {% for p in pending_req %}
-                    <tr>
-                        <td>{{ p.name }}</td>
-                        <td>{{ p.email }}</td>
-                        <td>
-                            <form method="POST" action="{{ url_for('staff_approval', staff_id = p._id) }}">
-                                <button type="submit" class="btn btn-success" name="action" value="accept">Accept</button>
-                                <button type="submit" class="btn btn-danger" name="action" value="reject">Reject</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="card border-0 shadow-sm mb-4 section-card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Pending Requests</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <th colspan="4">Pending Requests</th>
+                        <tbody>
+                            {% for p in pending_req %}
+                                <tr>
+                                    <td>{{ p.name }}</td>
+                                    <td>{{ p.email }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('staff_approval', staff_id = p._id) }}">
+                                            <button type="submit" class="btn btn-success" name="action" value="accept">Accept</button>
+                                            <button type="submit" class="btn btn-danger" name="action" value="reject">Reject</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     {% endif %}
+    
+    <!-- Search Form -->
+    <div class="card border-0 shadow-sm mb-4 section-card">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3">Search</h5>
+            <div class="table-responsive">
+                <form action="{{ url_for('admin_search') }}" method="POST">
+                    <div class="mb-3">
+                        <label for="id" class="form-label">ID</label>
+                        <input type="number" class="form-control" id="id" name="id" required>
+                    </div>
+                    <div class="mb-3">
+                        <select class="form-select" aria-label="Default select example" name="val" required>
+                            <option value="" disabled selected>Choose your search</option>
+                            <option value="trek">Trek</option>
+                            <option value="staff">Staff</option>
+                            <option value="user">User</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Result -->
+    {% if search_type is defined %}
+        <div class="card border-0 shadow-sm mb-4 section-card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Section Title</h5>
+                <div class="table-responsive">
+                    <h4>Search Result</h4>
+                    {% if search_result %}
+                        <table class="table">
+                            {% if search_type == "trek" %}
+                                <tr>
+                                    <th>ID</th><th>Name</th><th>Location</th><th>Difficulty</th>
+                                    <th>Status</th><th>Start Date</th><th>End Date</th>
+                                    <th>Total Slots</th><th>Available Slots</th><th>Assigned Staff</th>
+                                </tr>
+                                <tr>
+                                    <td>{{ search_result._id }}</td>
+                                    <td>{{ search_result.name }}</td>
+                                    <td>{{ search_result.location }}</td>
+                                    <td>{{ search_result.difficulty }}</td>
+                                    <td>{{ search_result.status }}</td>
+                                    <td>{{ search_result.start_date }}</td>
+                                    <td>{{ search_result.end_date }}</td>
+                                    <td>{{ search_result.total_slots }}</td>
+                                    <td>{{ search_result.available_slots }}</td>
+                                    <td>{{ search_result.staff_member.name if search_result.staff_member else "Unassigned" }}</td>
+                                </tr>
+                            {% elif search_type == "staff" %}
+                                <tr>
+                                    <th>ID</th><th>Name</th><th>Username</th><th>Email</th><th>Status</th>
+                                </tr>
+                                <tr>
+                                    <td>{{ search_result._id }}</td>
+                                    <td>{{ search_result.name }}</td>
+                                    <td>{{ search_result.username }}</td>
+                                    <td>{{ search_result.email }}</td>
+                                    <td>{{ search_result.status }}</td>
+                                </tr>
+                            {% elif search_type == "user" %}
+                                <tr>
+                                    <th>ID</th><th>Name</th><th>Username</th><th>Email</th><th>Status</th>
+                                </tr>
+                                <tr>
+                                    <td>{{ search_result._id }}</td>
+                                    <td>{{ search_result.name }}</td>
+                                    <td>{{ search_result.username }}</td>
+                                    <td>{{ search_result.email }}</td>
+                                    <td>{{ search_result.status }}</td>
+                                </tr>
+                            {% endif %}
+                        </table>
+                    {% else %}
+                        <p>No {{ search_type }} found with that ID.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Trek Management Button -->
+    <div class="d-flex justify-content-center mb-4">
+        <a href="{{ url_for('admin_trek_management') }}" class="btn btn-lg px-5 py-2 w-50" style="background-color:#1a3c2e; color:white;">
+            Trek Management
+        </a>
+    </div>
 
     <!-- Booking Details -->
     {% if all_bookings %}
-        <table class="table">
-            <th colspan="4">Booking Details</th>
-            <tr>
-                <th>Booking ID</th>
-                <th>Booking Date</th>
-                <th>Status</th>
-                <th>User ID</th>
-                <th>User Name</th>
-                <th>Trek ID</th>
-                <th>Trek Name</th>
-                <th>Trek location</th>
-            </tr>
-            {% for booking in all_bookings %}
-                <tr>
-                    <td><p>{{ booking._id }}</p></td>
-                    <td><p>{{ booking.booking_date.split('.')[0] }}</p></td>
-                    <td><p>{{ booking.status }}</p></td>
-                    <td><p>{{ booking.booked_user._id }}</p></td>
-                    <td><p>{{ booking.booked_user.name }}</p></td>
-                    <td><p>{{ booking.booked_trek._id }}</p></td>
-                    <td><p>{{ booking.booked_trek.name }}</p></td>
-                    <td><p>{{ booking.booked_trek.location }}</p></td>
-                </tr>
-            {% endfor %}
-        </table>
+        <div class="card border-0 shadow-sm mb-4 section-card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Booking Details</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Booking Date</th>
+                            <th>Status</th>
+                            <th>User ID</th>
+                            <th>User Name</th>
+                            <th>Trek ID</th>
+                            <th>Trek Name</th>
+                            <th>Trek location</th>
+                        </tr>
+                        {% for booking in all_bookings %}
+                            <tr>
+                                <td><p>{{ booking._id }}</p></td>
+                                <td><p>{{ booking.booking_date.split('.')[0] }}</p></td>
+                                <td><p>{{ booking.status }}</p></td>
+                                <td><p>{{ booking.booked_user._id }}</p></td>
+                                <td><p>{{ booking.booked_user.name }}</p></td>
+                                <td><p>{{ booking.booked_trek._id }}</p></td>
+                                <td><p>{{ booking.booked_trek.name }}</p></td>
+                                <td><p>{{ booking.booked_trek.location }}</p></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
     {% endif %}
-
+    
     {% if all_treks %}
-        <table class="table">
-            <th colspan="10">Treks</th>
-            <tr>
-                <th>Name</th>
-                <th>Location</th>
-                <th>Difficulty</th>
-                <th>Status</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Duration</th>
-                <th>Total slots</th>
-                <th>Available slots</th>
-                <th>Assigned Staff</th>
-            </tr>
-            {% for trek in all_treks %}
-                <tr>
-                    <td><p>{{ trek.name }}</p></td>
-                    <td><p>{{ trek.location }}</p></td>
-                    <td><p>{{ trek.difficulty }}</p></td>
-                    <td><p>{{ trek.status }}</p></td>
-                    <td><p>{{ trek.start_date }}</p></td>
-                    <td><p>{{ trek.end_date }}</p></td>
-                    <td><p>{{ trek.duration }} day(s)</p></td>
-                    <td><p>{{ trek.total_slots }}</p></td>
-                    <td><p>{{ trek.available_slots }}</p></td>
-                    <td><p>{{ trek.staff_member.name }}</p></td>
-                </tr>
-            {% endfor %}
-        </table>
+        <div class="card border-0 shadow-sm mb-4 section-card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Trek Details</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <th colspan="10">Treks</th>
+                        <tr>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Difficulty</th>
+                            <th>Status</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Duration</th>
+                            <th>Total slots</th>
+                            <th>Available slots</th>
+                            <th>Assigned Staff</th>
+                        </tr>
+                        {% for trek in all_treks %}
+                            <tr>
+                                <td><p>{{ trek.name }}</p></td>
+                                <td><p>{{ trek.location }}</p></td>
+                                <td><p>{{ trek.difficulty }}</p></td>
+                                <td><p>{{ trek.status }}</p></td>
+                                <td><p>{{ trek.start_date }}</p></td>
+                                <td><p>{{ trek.end_date }}</p></td>
+                                <td><p>{{ trek.duration }} day(s)</p></td>
+                                <td><p>{{ trek.total_slots }}</p></td>
+                                <td><p>{{ trek.available_slots }}</p></td>
+                                <td><p>{{ trek.staff_member.name }}</p></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
     {% endif %}
 
     <!-- Staff Details Table -->
     {% if active_staff %}
-        <table class="table">
-            <th colspan="4">Staff Details</th>
-            <tr>
-                <th>Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Action</th>
-            </tr>
-            {% for a in active_staff %}
-                <tr>
-                    <td><p>{{ a.name }}</p></td>
-                    <td><p>{{ a.username }}</p></td>
-                    <td><p>{{ a.email }}</p></td>
-                    <td>
-                        <form method="POST" action="{{ url_for('staff_blacklist', staff_id=a._id) }}">
-                            <button type="submit" class="btn btn-danger btn-sm">Blacklist</button>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
+        <div class="card border-0 shadow-sm mb-4 section-card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Section Title</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <th colspan="4">Staff Details</th>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Action</th>
+                        </tr>
+                        {% for a in active_staff %}
+                            <tr>
+                                <td><p>{{ a.name }}</p></td>
+                                <td><p>{{ a.username }}</p></td>
+                                <td><p>{{ a.email }}</p></td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('staff_blacklist', staff_id=a._id) }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Blacklist</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
     {% endif %}
 
     <!-- Users Details Table -->
     {% if all_users %}
-        <table class="table">
+        <table class="table table-hover align-middle">
             <th colspan="4">Users Details</th>
             <tr>
                 <th>Name</th>
@@ -145,76 +279,4 @@
             {% endfor %}
         </table>
     {% endif %}
-
-    <!-- Search Form -->
-    <div>
-        <form action="{{ url_for('admin_search') }}" method="POST">
-            <div class="mb-3">
-                <label for="id" class="form-label">ID</label>
-                <input type="number" class="form-control" id="id" name="id" required>
-            </div>
-            <div class="mb-3">
-                <select class="form-select" aria-label="Default select example" name="val" required>
-                    <option value="" disabled selected>Choose your search</option>
-                    <option value="trek">Trek</option>
-                    <option value="staff">Staff</option>
-                    <option value="user">User</option>
-                </select>
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </form>
-    </div>
-
-    <!-- Search Result -->
-    {% if search_type is defined %}
-        <h4>Search Result</h4>
-        {% if search_result %}
-            <table class="table">
-                {% if search_type == "trek" %}
-                    <tr>
-                        <th>ID</th><th>Name</th><th>Location</th><th>Difficulty</th>
-                        <th>Status</th><th>Start Date</th><th>End Date</th>
-                        <th>Total Slots</th><th>Available Slots</th><th>Assigned Staff</th>
-                    </tr>
-                    <tr>
-                        <td>{{ search_result._id }}</td>
-                        <td>{{ search_result.name }}</td>
-                        <td>{{ search_result.location }}</td>
-                        <td>{{ search_result.difficulty }}</td>
-                        <td>{{ search_result.status }}</td>
-                        <td>{{ search_result.start_date }}</td>
-                        <td>{{ search_result.end_date }}</td>
-                        <td>{{ search_result.total_slots }}</td>
-                        <td>{{ search_result.available_slots }}</td>
-                        <td>{{ search_result.staff_member.name if search_result.staff_member else "Unassigned" }}</td>
-                    </tr>
-                {% elif search_type == "staff" %}
-                    <tr>
-                        <th>ID</th><th>Name</th><th>Username</th><th>Email</th><th>Status</th>
-                    </tr>
-                    <tr>
-                        <td>{{ search_result._id }}</td>
-                        <td>{{ search_result.name }}</td>
-                        <td>{{ search_result.username }}</td>
-                        <td>{{ search_result.email }}</td>
-                        <td>{{ search_result.status }}</td>
-                    </tr>
-                {% elif search_type == "user" %}
-                    <tr>
-                        <th>ID</th><th>Name</th><th>Username</th><th>Email</th><th>Status</th>
-                    </tr>
-                    <tr>
-                        <td>{{ search_result._id }}</td>
-                        <td>{{ search_result.name }}</td>
-                        <td>{{ search_result.username }}</td>
-                        <td>{{ search_result.email }}</td>
-                        <td>{{ search_result.status }}</td>
-                    </tr>
-                {% endif %}
-            </table>
-        {% else %}
-            <p>No {{ search_type }} found with that ID.</p>
-        {% endif %}
-    {% endif %}
-
 {% endblock %}

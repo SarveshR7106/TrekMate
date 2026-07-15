@@ -1,6 +1,16 @@
 {% extends "base.html" %}
 {% block Title %}Logout Page{% endblock %}
 {% block content %}
-    <a href="{{ url_for('login')}}"><button class="btn btn-primary" type="submit">Login</button></a>
-    <a href="{{ url_for('home')}}"><button class="btn btn-primary" type="submit">Home</button></a>
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-5 text-center">
+            <div class="card shadow-sm border-0 p-4">
+                <h3 class="fw-bold mb-3" style="color:#1a3c2e;">You've been logged out</h3>
+                <p class="text-muted">See you on the next trek!</p>
+                <div class="d-flex justify-content-center gap-3 mt-3">
+                    <a href="{{ url_for('login') }}" class="btn" style="background-color:#1a3c2e; color:white;">Login</a>
+                    <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">Home</a>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}

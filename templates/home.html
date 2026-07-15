@@ -1,11 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Home Page{% endblock %}
 {% block content %}
-    <div class="container mt-5">
-        <h1>Welcome to Trekking App!</h1>
-        <p>Plan, book, and manage your next trek — all in one place.</p>
-
-        <a href="{{ url_for('login') }}"><button class="btn btn-primary">Login</button></a>
-        <a href="{{ url_for('signup') }}"><button class="btn btn-outline-primary">Sign Up</button></a>
+    <div class="row justify-content-center mt-5">
+    <div class="col-md-8 text-center">
+        <h1 class="display-4 fw-bold" style="color:#1a3c2e;">Welcome to TrekMate 🏔</h1>
+        <p class="lead text-muted mt-3">Plan, book, and manage your next trek — all in one place.</p>
+        <hr class="my-4">
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <a href="{{ url_for('login') }}" class="btn btn-lg px-5" style="background-color:#1a3c2e; color:white;">Login</a>
+            <a href="{{ url_for('signup') }}" class="btn btn-lg btn-outline-secondary px-5">Sign Up</a>
+        </div>
     </div>
+</div>
 {% endblock %}

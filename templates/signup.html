@@ -6,36 +6,47 @@
 {% endblock %}
 
 {% block content %}
-    <form method="POST" action="{{ url_for('signup') }}">
-        <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input type="text" class="form-control" id="name" name="name">
+    <div class="row justify-content-center mt-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="fw-bold mb-4 text-center" style="color:#1a3c2e;">Create Account</h3>
+                    <form method="POST" action="{{ url_for('signup') }}" autocomplete="off">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" minlength="5" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone_no" name="phone_no" minlength="10" maxlength="10">
+                        </div>
+                        <div class="mb-3">
+                            <select class="form-select" aria-label="Default select example" name="role" required>
+                                <option selected>Choose your role</option>
+                                <option value="staff">Staff</option>
+                                <option value="user">User</option>
+                            </select>
+                        </div>
+                        <div class="d-grid mt-3">
+                            <button type="submit" class="btn btn-lg" style="background-color:#1a3c2e; color:white;">Sign Up</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control" id="email" name="email" required>
-        </div>
-        <div class="mb-3">
-            <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control" id="username" name="username" required>
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" minlength="5" required>
-        </div>
-        <div class="mb-3">
-            <label for="phone" class="form-label">Phone Number</label>
-            <input type="tel" class="form-control" id="phone_no" name="phone_no" minlength="10" maxlength="10">
-        </div>
-        <div class="mb-3">
-            <select class="form-select" aria-label="Default select example" name="role" required>
-                <option selected>Choose your role</option>
-                <option value="staff">Staff</option>
-                <option value="user">User</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    </div>
     {% if error %}
         <div class="alert alert-danger">{{ error }}</div>
     {% endif %}

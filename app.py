@@ -494,6 +494,28 @@ def staff_remove_participant(booking_id):
 
     return redirect(url_for("staff_dashboard"))
 
+@app.route("/staff/update-slots/<int:trek_id>", methods=["POST"])
+def staff_update_slots(trek_id):
+    if "staff" not in session:
+        return redirect(url_for("login"))
+    
+    found_trek = db.session.get(treks, trek_id)
+    
+    if found_trek.assigned_staff_id != session["staff"]:
+        flash("You are not assigned to this trek")
+        return redirect(url_for("staff_dashboard"))
+    
+    new_slots = int(request.form["slots"])
+    
+    if new_slots > found_trek.total_slots:
+        flash("Slots cannot exceed total slots")
+        return redirect(url_for("staff_dashboard"))
+    
+    found_trek.available_slots = new_slots
+    db.session.commit()
+    flash("Slots updated successfully")
+    return redirect(url_for("staff_dashboard"))
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
