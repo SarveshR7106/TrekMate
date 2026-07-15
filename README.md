@@ -108,3 +108,8 @@ A Flask-based web application for managing trek bookings, with separate dashboar
 | `/staff/trek-close/<trek_id>` | Close a trek |
 | `/staff/update-slots/<trek_id>` | Update available slots |
 | `/staff/remove-participant/<booking_id>` | Remove a booking participant |
+
+## Admin Credentials
+
+Username: admin
+Password: admin123
