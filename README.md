@@ -108,8 +108,3 @@ A Flask-based web application for managing trek bookings, with separate dashboar
 | `/staff/trek-close/<trek_id>` | Close a trek |
 | `/staff/update-slots/<trek_id>` | Update available slots |
 | `/staff/remove-participant/<booking_id>` | Remove a booking participant |
-
-## Notes
-
-- `app.secret_key` and database URI in `app.py` are set for development only — replace with environment variables before deploying.
-- SQLite is used for simplicity; swap the `SQLALCHEMY_DATABASE_URI` for a production database (e.g., PostgreSQL) if scaling up.
