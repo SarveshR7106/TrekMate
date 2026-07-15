@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 {% block title %}User Page{% endblock %}
 {% block content %}
-        <div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold" style="color:#1a3c2e;">Trekker Dashboard</h2>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4 section-card">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3">🔍 Search Trek by ID</h5>
             <form action="{{ url_for('user_search') }}" method="POST">
                 <div class="mb-3">
                     <label for="id" class="form-label">Trek ID</label>
@@ -10,92 +17,111 @@
                 <button type="submit" class="btn btn-primary">Search</button>
             </form>
         </div>
+    </div>
 
-        {% if search_result is defined %}
-            <h4>Search Result</h4>
-            {% if search_result %}
-                <table class="table">
-                    <tr>
-                        <th>ID</th><th>Name</th><th>Location</th><th>Difficulty</th>
-                        <th>Status</th><th>Start Date</th><th>End Date</th><th>Available Slots</th>
-                    </tr>
-                    <tr>
-                        <td>{{ search_result._id }}</td>
-                        <td>{{ search_result.name }}</td>
-                        <td>{{ search_result.location }}</td>
-                        <td>{{ search_result.difficulty }}</td>
-                        <td>{{ search_result.status }}</td>
-                        <td>{{ search_result.start_date }}</td>
-                        <td>{{ search_result.end_date }}</td>
-                        <td>{{ search_result.available_slots }}</td>
-                    </tr>
-                </table>
-            {% else %}
-                <p>No trek found with that ID.</p>
-            {% endif %}
-        {% endif %}
-
-        <form method="GET" action="{{ url_for('user_dashboard') }}" class="mb-3">
-            <select name="difficulty" class="form-select" style="display:inline-block; width:auto;">
-                <option value="">All Difficulties</option>
-                <option value="easy" {% if selected_difficulty == 'easy' %}selected{% endif %}>Easy</option>
-                <option value="medium" {% if selected_difficulty == 'medium' %}selected{% endif %}>Medium</option>
-                <option value="hard" {% if selected_difficulty == 'hard' %}selected{% endif %}>Hard</option>
-            </select>
-            <input type="text" name="location" class="form-control" style="display:inline-block; width:auto;"
-                placeholder="Filter by location" value="{{ selected_location or '' }}">
-            <button type="submit" class="btn btn-primary">Filter</button>
-            <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-secondary">Clear</a>
-        </form>
-
-        {% if all_treks %}
-        <table class="table">
-            <th colspan="10">Treks</th>
-            <tr>
-                <th>Name</th>
-                <th>Location</th>
-                <th>Difficulty</th>
-                <th>Status</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Duration</th>
-                <th>Available slots</th>
-                <th>Booking</th>
-            </tr>
-            {% for trek in all_treks %}
-                <tr>
-                    <td><p>{{ trek.name }}</p></td>
-                    <td><p>{{ trek.location }}</p></td>
-                    <td><p>{{ trek.difficulty }}</p></td>
-                    <td><p>{{ trek.status }}</p></td>
-                    <td><p>{{ trek.start_date }}</p></td>
-                    <td><p>{{ trek.end_date }}</p></td>
-                    <td><p>{{ trek.duration }} day(s)</p></td>
-                    <td><p>{{ trek.available_slots }}</p></td>
-                    {% if trek._id in booked_trek_ids %}
-                        <td>
-                            <p>Already booked</p>
-                            <form method="POST" action="{{ url_for('trek_cancelling', trek_id=trek._id) }}">
-                                <button type="submit">Cancel</button>
-                            </form>
-                        </td>
-                    {% elif trek.status == 'closed' %}
-                        <td><p>Can't book a slot</p></td>
-                    {% elif trek.available_slots <= 0 %}
-                        <td><p>No slots left</p></td>
-                    {% elif trek.status == 'completed' %}
-                        <td><p>Trek is completed</p></td>
-                    {% elif trek.status == 'active' %}
-                        <td>
-                            <form method="POST" action="{{ url_for('trek_booking', trek_id=trek._id) }}">
-                                <button type="submit">Book Slot</button>
-                            </form>
-                        </td>
+    {% if search_result is defined %}
+        <div class="card border-0 shadow-sm mb-4 section-card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Search Result</h5>
+                <div class="table-responsive">
+                    {% if search_result %}
+                        <table class="table table-hover align-middle">
+                            <tr>
+                                <th>ID</th><th>Name</th><th>Location</th><th>Difficulty</th>
+                                <th>Status</th><th>Start Date</th><th>End Date</th><th>Available Slots</th>
+                            </tr>
+                            <tr>
+                                <td>{{ search_result._id }}</td>
+                                <td>{{ search_result.name }}</td>
+                                <td>{{ search_result.location }}</td>
+                                <td>{{ search_result.difficulty }}</td>
+                                <td>{{ search_result.status }}</td>
+                                <td>{{ search_result.start_date }}</td>
+                                <td>{{ search_result.end_date }}</td>
+                                <td>{{ search_result.available_slots }}</td>
+                            </tr>
+                        </table>
+                    {% else %}
+                        <p>No trek found with that ID.</p>
                     {% endif %}
-                </tr>
-            {% endfor %}
-        </table>
+                </div>
+            </div>
+        </div>
     {% endif %}
+
+    <div class="card border-0 shadow-sm mb-4 section-card">
+        <div class="card-body">
+            <h5 class="fw-bold mb-3">🎯 Filter Treks</h5>
+            <form method="GET" action="{{ url_for('user_dashboard') }}" class="d-flex flex-wrap gap-2 align-items-center">
+                <select name="difficulty" class="form-select" style="display:inline-block; width:auto;">
+                    <option value="">All Difficulties</option>
+                    <option value="easy" {% if selected_difficulty == 'easy' %}selected{% endif %}>Easy</option>
+                    <option value="medium" {% if selected_difficulty == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="hard" {% if selected_difficulty == 'hard' %}selected{% endif %}>Hard</option>
+                </select>
+                <input type="text" name="location" class="form-control" style="display:inline-block; width:auto;"
+                    placeholder="Filter by location" value="{{ selected_location or '' }}">
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{{ url_for('user_dashboard') }}" class="btn btn-outline-secondary">Clear</a>
+            </form>
+        </div>
+    </div>
+
+    {% if all_treks %}
+        <div class="card border-0 shadow-sm mb-4 section-card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Treks</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <tr>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Difficulty</th>
+                            <th>Status</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Duration</th>
+                            <th>Available slots</th>
+                            <th>Booking</th>
+                        </tr>
+                        {% for trek in all_treks %}
+                            <tr>
+                                <td>{{ trek.name }}</td>
+                                <td>{{ trek.location }}</td>
+                                <td>{{ trek.difficulty }}</td>
+                                <td>{{ trek.status }}</td>
+                                <td>{{ trek.start_date }}</td>
+                                <td>{{ trek.end_date }}</td>
+                                <td>{{ trek.duration }} day(s)</td>
+                                <td>{{ trek.available_slots }}</td>
+                                {% if trek._id in booked_trek_ids %}
+                                    <td>
+                                        <span class="badge bg-success">Booked</span>
+                                        <form method="POST" action="{{ url_for('trek_cancelling', trek_id=trek._id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                                        </form>
+                                    </td>
+                                {% elif trek.status == 'closed' %}
+                                    <td><span class="badge bg-danger">Closed</span></td>
+                                {% elif trek.available_slots <= 0 %}
+                                    <td><span class="badge bg-warning text-dark">Full</span></td>
+                                {% elif trek.status == 'completed' %}
+                                    <td><span class="badge bg-secondary">Completed</span></td>
+                                {% elif trek.status == 'active' %}
+                                    <td>
+                                        <form method="POST" action="{{ url_for('trek_booking', trek_id=trek._id) }}">
+                                            <button type="submit" class="btn btn-sm" style="background-color:#1a3c2e; color:white;">Book Slot</button>
+                                        </form>
+                                    </td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
     {% if error %}
         <div class="alert alert-danger">{{ error }}</div>
     {% endif %}

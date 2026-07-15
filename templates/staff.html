@@ -69,35 +69,40 @@
         <p>You have no assigned treks.</p>
     {% endif %}
  
-
-    <h3>Registered Trekkers</h3>
     {% for trek in assigned_treks %}
-        <h5>{{ trek.name }} ({{ trek.location }})</h5>
-        {% if trek_bookings[trek._id] %}
-            <table class="table">
-                <tr>
-                    <th>User ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Booking Date</th>
-                    <th>Action</th>
-                </tr>
-                {% for b in trek_bookings[trek._id] %}
-                    <tr>
-                        <td>{{ b.booked_user._id }}</td>
-                        <td>{{ b.booked_user.name }}</td>
-                        <td>{{ b.booked_user.email }}</td>
-                        <td>{{ b.booking_date.split('.')[0] if b.booking_date is string else b.booking_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                        <td>
-                            <form method="POST" action="{{ url_for('staff_remove_participant', booking_id=b._id) }}">
-                                <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </table>
-        {% else %}
-            <p>No participants registered yet.</p>
-        {% endif %}
+        <div class="card border-0 shadow-sm mb-4 section-card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">Registered Trekkers</h5>
+                <div class="table-responsive">
+                    <h5>{{ trek.name }} ({{ trek.location }})</h5>
+                    {% if trek_bookings[trek._id] %}
+                        <table class="table">
+                            <tr>
+                                <th>User ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Booking Date</th>
+                                <th>Action</th>
+                            </tr>
+                            {% for b in trek_bookings[trek._id] %}
+                                <tr>
+                                    <td>{{ b.booked_user._id }}</td>
+                                    <td>{{ b.booked_user.name }}</td>
+                                    <td>{{ b.booked_user.email }}</td>
+                                    <td>{{ b.booking_date.split('.')[0] if b.booking_date is string else b.booking_date.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('staff_remove_participant', booking_id=b._id) }}">
+                                            <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </table>
+                    {% else %}
+                        <p>No participants registered yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     {% endfor %}
 {% endblock %}

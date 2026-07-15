@@ -2,7 +2,10 @@
 {% block title %}Admin Page{% endblock %}
 {% block content %}
     <p class="lead text-center">Hello admin!!</p>
-
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold" style="color:#1a3c2e;">Staff Dashboard</h2>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+    </div>
     <!-- Details -->
     <div class="row g-3 mb-4">
         <div class="col-md-3">
@@ -87,9 +90,8 @@
     {% if search_type is defined %}
         <div class="card border-0 shadow-sm mb-4 section-card">
             <div class="card-body">
-                <h5 class="fw-bold mb-3">Section Title</h5>
+                <h5 class="fw-bold mb-3">Search Result</h5>
                 <div class="table-responsive">
-                    <h4>Search Result</h4>
                     {% if search_result %}
                         <table class="table">
                             {% if search_type == "trek" %}
@@ -190,7 +192,6 @@
                 <h5 class="fw-bold mb-3">Trek Details</h5>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
-                        <th colspan="10">Treks</th>
                         <tr>
                             <th>Name</th>
                             <th>Location</th>
@@ -227,10 +228,9 @@
     {% if active_staff %}
         <div class="card border-0 shadow-sm mb-4 section-card">
             <div class="card-body">
-                <h5 class="fw-bold mb-3">Section Title</h5>
+                <h5 class="fw-bold mb-3">Staff Details</h5>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
-                        <th colspan="4">Staff Details</th>
                         <tr>
                             <th>Name</th>
                             <th>Username</th>
@@ -256,27 +256,34 @@
     {% endif %}
 
     <!-- Users Details Table -->
-    {% if all_users %}
-        <table class="table table-hover align-middle">
-            <th colspan="4">Users Details</th>
-            <tr>
-                <th>Name</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Action</th>
-            </tr>
-            {% for a in all_users %}
-                <tr>
-                    <td><p>{{ a.name }}</p></td>
-                    <td><p>{{ a.username }}</p></td>
-                    <td><p>{{ a.email }}</p></td>
-                    <td>
-                        <form method="POST" action="{{ url_for('users_blacklist', staff_id=a._id) }}">
-                            <button type="submit" class="btn btn-danger btn-sm">Blacklist</button>
-                        </form>
-                    </td>
-                </tr>
-            {% endfor %}
-        </table>
+    {% if active_users %}
+        <div class="card border-0 shadow-sm mb-4 section-card">
+            <div class="card-body">
+                <h5 class="fw-bold mb-3">User Details</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <th colspan="4">Users Details</th>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Action</th>
+                        </tr>
+                        {% for a in active_users %}
+                            <tr>
+                                <td><p>{{ a.name }}</p></td>
+                                <td><p>{{ a.username }}</p></td>
+                                <td><p>{{ a.email }}</p></td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('user_blacklist', user_id=a._id) }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Blacklist</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
     {% endif %}
 {% endblock %}

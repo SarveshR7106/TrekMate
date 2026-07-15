@@ -193,6 +193,7 @@ def admin_dashboard():                                  #Admin Dashboard
         total_staff = staffs.query.count()
 
         total_users = users.query.count()
+        active_users = users.query.filter_by(status="active").all()
 
         all_bookings = bookings.query.all()
         total_bookings = bookings.query.count()
@@ -202,6 +203,7 @@ def admin_dashboard():                                  #Admin Dashboard
             "admin.html", 
             pending_req=pending_req, 
             active_staff=active_staff, 
+            active_users=active_users,
             all_bookings=all_bookings, 
             all_treks = all_treks, 
             total_staff=total_staff,
@@ -262,6 +264,7 @@ def admin_search():
     total_active_treks = treks.query.filter_by(status="active").count()
     total_treks = treks.query.count()
     active_staff = staffs.query.filter(staffs.status.in_(["active", "assigned"])).all()
+    active_users = users.query.filter_by(status="active").all()
     total_staff = staffs.query.count()
     total_users = users.query.count()
     all_bookings = bookings.query.all()
@@ -272,6 +275,7 @@ def admin_search():
         "admin.html",
         pending_req=pending_req,
         active_staff=active_staff,
+        active_users=active_users,
         all_bookings=all_bookings,
         all_treks=all_treks,
         total_staff=total_staff,
@@ -363,11 +367,27 @@ def staff_approval(staff_id): #Flask directly passes the attribute and for a spl
 @app.route("/user")
 def user_dashboard():
     if "user" in session:
-        all_treks = treks.query.all()
+        selected_difficulty = request.args.get("difficulty", "")
+        selected_location = request.args.get("location", "")
+
+        query = treks.query
+        if selected_difficulty:
+            query = query.filter_by(difficulty=selected_difficulty)
+        if selected_location:
+            query = query.filter(treks.location.ilike(f"%{selected_location}%"))
+
+        all_treks = query.all()
+
         user_bookings = bookings.query.filter_by(user_id=session["user"], status="booked").all()
         booked_trek_ids = [i.trek_id for i in user_bookings]
 
-        return render_template("user.html", all_treks=all_treks, booked_trek_ids=booked_trek_ids)
+        return render_template(
+            "user.html",
+            all_treks=all_treks,
+            booked_trek_ids=booked_trek_ids,
+            selected_difficulty=selected_difficulty,
+            selected_location=selected_location
+        )
     else:
         return redirect(url_for("login"))
     
