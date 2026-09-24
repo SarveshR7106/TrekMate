@@ -1,4 +1,4 @@
-# Trekking Booking System
+# TrekMate - Trekking Management System
 
 A Flask-based web application for managing trek bookings, with separate dashboards for **Admin**, **Staff**, and **Users (Trekkers)**.
 
@@ -111,5 +111,5 @@ A Flask-based web application for managing trek bookings, with separate dashboar
 
 ## Admin Credentials
 
-Username: admin
-Password: admin123
+- Username: admin
+- Password: admin123
