@@ -202,6 +202,7 @@
                             <th>Total slots</th>
                             <th>Available slots</th>
                             <th>Assigned Staff</th>
+                            <th>Action</th>
                         </tr>
                         {% for trek in all_treks %}
                             <tr>
@@ -215,6 +216,7 @@
                                 <td><p>{{ trek.total_slots }}</p></td>
                                 <td><p>{{ trek.available_slots }}</p></td>
                                 <td><p>{{ trek.staff_member.name }}</p></td>
+                                <td><form method="POST" action="{{ url_for(del_trek) }}"><button type="submit">DELETE</button></form></td>
                             </tr>
                         {% endfor %}
                     </table>

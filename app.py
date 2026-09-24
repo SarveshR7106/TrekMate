@@ -310,6 +310,20 @@ def reassign_staff(trek_id):
 
     return redirect(url_for("admin_trek_management"))
 
+@app.route("/admin/delete-trek/<int:trek_id>", method=['POST'])
+def del_trek(trek_id):
+    if "admin" not in session:
+        return redirect(url_for("login"))
+
+    found_trek = db.session.get(treks, trek_id)
+
+    if found_trek:
+        found_assinged_staff = db.session.get(staffs, found_trek.assigned_staff_id)
+        found_assinged_staff.status = "active"
+
+        db.session.remove(found_trek)
+        db.session.commit()
+
 @app.route("/admin/staff-blacklist/<int:staff_id>", methods=["POST"])
 def staff_blacklist(staff_id):
     if "admin" not in session:
