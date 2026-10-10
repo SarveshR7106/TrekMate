@@ -2,10 +2,14 @@
 from flask import Flask, redirect, url_for, render_template, request, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+import os
+from dotenv import load_dotenv
 
 #CONFIG DETAILS
+load_dotenv()
+
 app = Flask(__name__)
-app.secret_key = "HELLOO!!"
+app.secret_key = os.environ.get("SECRET_KEY")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Trekking.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
