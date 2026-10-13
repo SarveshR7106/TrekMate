@@ -322,11 +322,15 @@ def del_trek(trek_id):
     found_trek = db.session.get(treks, trek_id)
 
     if found_trek:
-        found_assinged_staff = db.session.get(staffs, found_trek.assigned_staff_id)
-        found_assinged_staff.status = "active"
+        if found_trek.assigned_staff_id:
+            found_assigned_staff = db.session.get(staffs, found_trek.assigned_staff_id)
+            if found_assigned_staff:
+                found_assigned_staff.status = "active"
 
-        db.session.remove(found_trek)
+        db.session.delete(found_trek)
         db.session.commit()
+
+    return redirect(url_for("admin_dashboard"))
 
 @app.route("/admin/staff-blacklist/<int:staff_id>", methods=["POST"])
 def staff_blacklist(staff_id):
