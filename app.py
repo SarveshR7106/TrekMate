@@ -314,7 +314,7 @@ def reassign_staff(trek_id):
 
     return redirect(url_for("admin_trek_management"))
 
-@app.route("/admin/delete-trek/<int:trek_id>", method=['POST'])
+@app.route("/admin/delete-trek/<int:trek_id>", methods=['POST'])
 def del_trek(trek_id):
     if "admin" not in session:
         return redirect(url_for("login"))
